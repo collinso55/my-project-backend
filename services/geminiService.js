@@ -2,8 +2,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-console.log("Gemini Service Initialized with model: gemini-2.0-flash");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
+console.log("Gemini Service Initialized with model: gemini-1.5-flash-8b");
 
 const generateContentWithRetry = async (prompt, retries = 2, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
@@ -11,15 +11,21 @@ const generateContentWithRetry = async (prompt, retries = 2, delay = 1000) => {
             const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error) {
-            if (error.message.includes('429') && i < retries - 1) {
+            const isQuotaExceeded = error.message.includes('429') || (error.status === 429);
+            if (isQuotaExceeded && i < retries - 1) {
                 console.log(`Quota exceeded. Retrying in ${delay}ms...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 delay *= 2; // Exponential backoff
             } else {
-                console.error("Gemini API Error:", error.message);
+                console.error("Gemini API Error Details:", {
+                    message: error.message,
+                    stack: error.stack,
+                    status: error.status,
+                    response: error.response?.data
+                });
                 // Fallback mock response
                 return {
-                    text: "AI Analysis Unavailable: The market is currently volatile. Please monitor key support and resistance levels. (Mock Response due to API Error)",
+                    text: `AI Analysis Unavailable: ${error.message}. (Mock Response due to API Error)`,
                     source: 'mock',
                     error: error.message
                 };
