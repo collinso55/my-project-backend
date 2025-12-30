@@ -4,23 +4,35 @@ const supabase = require('../config/supabase');
 
 const getMarketExplanation = async (req, res) => {
     try {
-        const { symbol } = req.params;
-        const marketData = await coinGeckoService.getCoinData(symbol);
-        const news = await coinGeckoService.getCryptoNews(symbol);
+        const { id } = req.params;
+        console.log(`[Backend] Generating explanation for: ${id}`);
+        const marketData = await coinGeckoService.getCoinData(id);
+        console.log(`[Backend] Market data fetched for: ${id}`);
+        const news = await coinGeckoService.getCryptoNews(id);
 
         const explanation = await geminiService.generateExplanation(
-            symbol,
+            id,
             marketData.price,
             marketData.change24h,
             news
         );
 
         res.json({
-            symbol,
+            symbol: id,
             price: marketData.price,
             change24h: marketData.change24h,
             explanation
         });
+    } catch (error) {
+        console.error('[Backend] Error in getMarketExplanation:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getMarketOverview = async (req, res) => {
+    try {
+        const marketData = await coinGeckoService.getMarketOverview();
+        res.json(marketData);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -100,10 +112,31 @@ const addToWatchlist = async (req, res) => {
     }
 };
 
+const createPriceAlert = async (req, res) => {
+    try {
+        const { user_id, symbol, target_price, direction } = req.body;
+
+        const { data, error } = await supabase
+            .from('price_alerts')
+            .insert([
+                { user_id, symbol, target_price, direction }
+            ])
+            .select();
+
+        if (error) throw error;
+
+        res.json({ message: 'Price alert created', data });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     getMarketExplanation,
     assessRisk,
     suggestDiversification,
     analyzeNewsImpact,
-    addToWatchlist
+    addToWatchlist,
+    createPriceAlert,
+    getMarketOverview
 };

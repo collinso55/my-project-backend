@@ -2,9 +2,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+console.log("Gemini Service Initialized with model: gemini-2.0-flash");
 
-const generateContentWithRetry = async (prompt, retries = 5, delay = 5000) => {
+const generateContentWithRetry = async (prompt, retries = 2, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
         try {
             const result = await model.generateContent(prompt);
@@ -15,7 +16,9 @@ const generateContentWithRetry = async (prompt, retries = 5, delay = 5000) => {
                 await new Promise(resolve => setTimeout(resolve, delay));
                 delay *= 2; // Exponential backoff
             } else {
-                throw error;
+                console.error("Gemini API Error:", error.message);
+                // Fallback mock response
+                return "AI Analysis Unavailable: The market is currently volatile. Please monitor key support and resistance levels. (Mock Response due to API Error)";
             }
         }
     }
