@@ -2,8 +2,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
-console.log("Gemini Service Initialized with model: gemini-1.5-flash-8b");
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+console.log("Gemini Service Initialized with model: gemini-2.5-flash");
 
 const generateContentWithRetry = async (prompt, retries = 2, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
