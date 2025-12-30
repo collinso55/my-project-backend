@@ -21,7 +21,8 @@ const getMarketExplanation = async (req, res) => {
             symbol: id,
             price: marketData.price,
             change24h: marketData.change24h,
-            explanation
+            explanation: explanation.text || explanation,
+            source: explanation.source || marketData.source || 'live'
         });
     } catch (error) {
         console.error('[Backend] Error in getMarketExplanation:', error);
@@ -52,7 +53,8 @@ const assessRisk = async (req, res) => {
 
         res.json({
             symbol,
-            riskAssessment
+            riskAssessment: riskAssessment.text || riskAssessment,
+            source: riskAssessment.source || marketData.source || 'live'
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -86,7 +88,8 @@ const analyzeNewsImpact = async (req, res) => {
 
         res.json({
             symbol,
-            analysis
+            analysis: analysis.text || analysis,
+            source: analysis.source || marketData.source || 'live'
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

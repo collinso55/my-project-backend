@@ -18,7 +18,11 @@ const generateContentWithRetry = async (prompt, retries = 2, delay = 1000) => {
             } else {
                 console.error("Gemini API Error:", error.message);
                 // Fallback mock response
-                return "AI Analysis Unavailable: The market is currently volatile. Please monitor key support and resistance levels. (Mock Response due to API Error)";
+                return {
+                    text: "AI Analysis Unavailable: The market is currently volatile. Please monitor key support and resistance levels. (Mock Response due to API Error)",
+                    source: 'mock',
+                    error: error.message
+                };
             }
         }
     }
